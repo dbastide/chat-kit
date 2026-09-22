@@ -579,12 +579,12 @@ public final class SpeechService: NSObject, ObservableObject {
 }
 
 extension SpeechService: AVSpeechSynthesizerDelegate {
-    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+    public nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
                                        didStart utterance: AVSpeechUtterance) {
         Task { @MainActor in self.isSpeaking = true }
     }
 
-    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+    public nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
                                        didFinish utterance: AVSpeechUtterance) {
         Task { @MainActor in
             self.isSpeaking = false
@@ -592,7 +592,7 @@ extension SpeechService: AVSpeechSynthesizerDelegate {
         }
     }
 
-    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+    public nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
                                        didCancel utterance: AVSpeechUtterance) {
         Task { @MainActor in self.isSpeaking = false }
     }
