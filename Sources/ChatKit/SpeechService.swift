@@ -70,7 +70,7 @@ public final class SpeechService: NSObject, ObservableObject {
     /// until set.
     public static var logHook: ((String) -> Void)?
 
-    static func log(_ text: String) { logHook?(text) }
+    public static func log(_ text: String) { logHook?(text) }
 
     // MARK: Published state (drives composer/settings UI)
 
