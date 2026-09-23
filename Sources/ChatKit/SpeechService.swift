@@ -36,10 +36,16 @@ public enum STTProvider: String, CaseIterable, Identifiable {
 public protocol AltDictationEngine: AnyObject {
     /// True once the model is downloaded and loaded and ready to recognize.
     var isModelReady: Bool { get }
+    /// Whether the model files exist on disk (downloaded), independent of
+    /// whether they're currently loaded into memory.
+    var isModelDownloaded: Bool { get }
     /// Human-readable status (e.g. "Downloading model… 42%", "Ready").
     var statusText: String { get }
     /// Downloads/loads the model if needed. `onStatus` receives progress text.
     func prepare(onStatus: @escaping (String) -> Void) async
+    /// Deletes the downloaded model files from disk, freeing space. The engine
+    /// unloads any in-memory model first. Returns once removal completes.
+    func deleteModel() async throws
     /// Begins continuous dictation. `onPartial` fires with the live transcript,
     /// `onFinal` with the transcript when `stop()` is called, `onError` on
     /// failure. `onListening` reflects capture state.
@@ -165,6 +171,21 @@ public final class SpeechService: NSObject, ObservableObject {
             Task { @MainActor in self?.altStatusText = status }
         }
         altStatusText = engine.statusText
+    }
+
+    /// Whether the alternate engine's model is downloaded to disk.
+    public var altModelDownloaded: Bool { altEngine?.isModelDownloaded ?? false }
+
+    /// Deletes the alternate engine's downloaded model from disk. Updates
+    /// `altStatusText`. No-op if no alternate engine.
+    public func deleteAltModel() async {
+        guard let engine = altEngine else { return }
+        do {
+            try await engine.deleteModel()
+            altStatusText = engine.statusText
+        } catch {
+            altStatusText = "Delete failed: \(error.localizedDescription)"
+        }
     }
 
     /// True when the selected provider is the alternate engine AND it's wired up.
